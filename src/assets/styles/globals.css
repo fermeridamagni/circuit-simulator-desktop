@@ -1,1 +1,51 @@
 @import "tailwindcss";
+
+@theme {
+  /* -- Color Palette: "Electric Slate" -- */
+
+  /* Backgrounds */
+  --color-canvas-bg: #09090b; /* Zinc 950 - The infinite canvas */
+  --color-panel-bg: #18181b; /* Zinc 900 - Sidebars, Properties */
+  --color-surface-bg: #27272a; /* Zinc 800 - Cards, Inputs */
+  --color-surface-hover: #3f3f46; /* Zinc 700 */
+
+  /* Borders */
+  --color-border-subtle: #27272a; /* Zinc 800 */
+  --color-border-active: #52525b; /* Zinc 600 */
+
+  /* Text */
+  --color-text-primary: #f4f4f5; /* Zinc 100 */
+  --color-text-secondary: #a1a1aa; /* Zinc 400 */
+  --color-text-muted: #52525b; /* Zinc 600 */
+
+  /* Accents (Circuit Themed) */
+  --color-accent-primary: #3b82f6; /* Blue 500 - Selection, Active UI */
+  --color-accent-glow: rgba(59, 130, 246, 0.5);
+
+  /* Simulation Colors */
+  --color-sim-high: #ef4444; /* Red 500 - Logic High / Power */
+  --color-sim-low: #3b82f6; /* Blue 500 - Logic Low / Ground */
+  --color-sim-active: #eab308; /* Yellow 500 - Current Flow */
+
+  /* -- Typography -- */
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+/* Utility Classes for Common Patterns */
+@layer utilities {
+  /* Glassmorphism for floating panels */
+  .glass-panel {
+    @apply bg-panel-bg/80 backdrop-blur-md border border-white/10 shadow-xl;
+  }
+
+  /* Technical Text */
+  .tech-text {
+    @apply font-mono text-xs tracking-tight text-text-secondary;
+  }
+
+  /* The "Linear" style subtle border */
+  .subtle-border {
+    @apply border border-white/5;
+  }
+}

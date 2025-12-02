@@ -1,6 +1,6 @@
 import type Konva from "konva";
 import type React from "react";
-import { useRef, useState } from "react";
+import { Activity, useRef, useState } from "react";
 import { Layer, Line, Rect, Stage } from "react-konva";
 import { v4 as uuidv4 } from "uuid";
 import { useCircuitStore } from "../store/useCircuitStore";
@@ -8,11 +8,12 @@ import type {
   ComponentType,
   IComponent,
   ILed,
+  IPin,
   IResistor,
 } from "../types/Component";
+import { ArduinoUnoNode } from "./canvas/ArduinoUnoNode";
 import { ButtonNode } from "./canvas/ButtonNode";
 import { LedNode } from "./canvas/LedNode";
-import { MicrocontrollerNode } from "./canvas/MicrocontrollerNode";
 import { ResistorNode } from "./canvas/ResistorNode";
 
 export const CircuitCanvas: React.FC = () => {
@@ -192,7 +193,7 @@ export const CircuitCanvas: React.FC = () => {
           <ResistorNode {...commonProps} component={component as IResistor} />
         );
       case "microcontroller":
-        return <MicrocontrollerNode {...commonProps} component={component} />;
+        return <ArduinoUnoNode {...commonProps} component={component} />;
       case "button":
         return <ButtonNode {...commonProps} component={component} />;
       default:
@@ -201,10 +202,11 @@ export const CircuitCanvas: React.FC = () => {
   };
 
   return (
-    <div
+    <button
       className="h-full w-full bg-gray-950"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
+      type="button"
     >
       <Stage
         draggable={!drawingWire} // Disable stage drag when drawing wire
@@ -262,28 +264,32 @@ export const CircuitCanvas: React.FC = () => {
           })}
 
           {/* Wire being drawn */}
-          {drawingWire && (
+          <Activity mode={drawingWire ? "visible" : "hidden"}>
             <Line
               dash={[10, 5]}
               lineCap="round" // Blue while drawing
               lineJoin="round"
               listening={false}
-              points={[
-                drawingWire.startPos.x,
-                drawingWire.startPos.y,
-                drawingWire.currentPos.x,
-                drawingWire.currentPos.y,
-              ]}
+              points={
+                drawingWire
+                  ? [
+                      drawingWire.startPos.x,
+                      drawingWire.startPos.y,
+                      drawingWire.currentPos.x,
+                      drawingWire.currentPos.y,
+                    ]
+                  : [0, 0, 0, 0]
+              }
               stroke="#3b82f6"
               strokeWidth={3}
             />
-          )}
+          </Activity>
 
           {/* Components */}
           {components.map(renderComponent)}
         </Layer>
       </Stage>
-    </div>
+    </button>
   );
 };
 
@@ -359,33 +365,79 @@ function createComponent(
   }
 
   if (type === "microcontroller") {
-    const width = 100;
-    // const height = 140;
-    const pins: any[] = []; // Using any[] temporarily or import IPin to fix strict type
+    const pins: IPin[] = [];
 
-    // Analog pins (Left)
-    for (let i = 0; i < 6; i++) {
-      pins.push({
-        id: `${id}_A${i}`,
-        componentId: id,
-        name: `A${i}`,
-        type: "analog",
-        direction: "bidirectional",
-        relativePosition: { x: -width / 2 + 5, y: -40 + i * 15 },
-      });
-    }
-
-    // Digital pins (Right)
-    for (let i = 0; i < 8; i++) {
+    // Digital Pins (Top Edge)
+    // D0-D7
+    for (let i = 0; i <= 7; i++) {
       pins.push({
         id: `${id}_D${i}`,
         componentId: id,
         name: `D${i}`,
         type: "digital",
         direction: "bidirectional",
-        relativePosition: { x: width / 2 - 5, y: -50 + i * 15 },
+        relativePosition: { x: 60 - i * 8, y: -45 },
       });
     }
+    // D8-D13, GND, AREF
+    for (let i = 8; i <= 13; i++) {
+      pins.push({
+        id: `${id}_D${i}`,
+        componentId: id,
+        name: `D${i}`,
+        type: "digital",
+        direction: "bidirectional",
+        relativePosition: { x: -10 - (i - 8) * 8, y: -45 },
+      });
+    }
+    pins.push({
+      id: `${id}_GND1`,
+      componentId: id,
+      name: "GND",
+      type: "ground",
+      direction: "bidirectional",
+      relativePosition: { x: -58, y: -45 },
+    });
+    pins.push({
+      id: `${id}_AREF`,
+      componentId: id,
+      name: "AREF",
+      type: "digital",
+      direction: "input",
+      relativePosition: { x: -66, y: -45 },
+    });
+
+    // Analog Pins (Bottom Edge)
+    for (let i = 0; i <= 5; i++) {
+      pins.push({
+        id: `${id}_A${i}`,
+        componentId: id,
+        name: `A${i}`,
+        type: "analog",
+        direction: "bidirectional",
+        relativePosition: { x: 50 - i * 8, y: 45 },
+      });
+    }
+
+    // Power Pins (Bottom Edge)
+    const powerPins = [
+      { name: "Vin", x: -10 },
+      { name: "GND", x: -18 },
+      { name: "GND", x: -26 },
+      { name: "5V", x: -34 },
+      { name: "3.3V", x: -42 },
+      { name: "RST", x: -50 },
+    ];
+    powerPins.forEach((p, idx) => {
+      pins.push({
+        id: `${id}_${p.name}_${idx}`,
+        componentId: id,
+        name: p.name,
+        type: "power",
+        direction: "bidirectional",
+        relativePosition: { x: p.x, y: 45 },
+      });
+    });
 
     return {
       ...base,

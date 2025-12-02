@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "./out/main/index.js",
-  "author": "example.com",
+  "author": {
+    "name": "fermeridamagni",
+    "email": "hello@magni.dev",
+    "url": "https://magni.dev"
+  },
   "homepage": "",
   "scripts": {
     "formatter:check": "pnpm dlx ultracite check",
@@ -20,12 +24,14 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "echo \"Not implemented yet.\" && exit 0"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@tailwindcss/vite": "^4.1.17",
+    "avr8js": "^0.20.1",
     "clsx": "^2.1.1",
     "electron-updater": "^6.6.2",
     "konva": "^10.0.12",

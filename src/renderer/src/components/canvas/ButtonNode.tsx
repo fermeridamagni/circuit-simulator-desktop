@@ -1,15 +1,16 @@
 import type Konva from "konva";
 import type React from "react";
 import { Circle, Group, Rect } from "react-konva";
+import { useCircuitStore } from "../../store/useCircuitStore";
 import type { IComponent } from "../../types/Component";
 
-interface ButtonNodeProps {
+type ButtonNodeProps = {
   component: IComponent;
   isSelected: boolean;
   onSelect: () => void;
   onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => void;
   onPinClick: (pinId: string, e: Konva.KonvaEventObject<MouseEvent>) => void;
-}
+};
 
 export const ButtonNode: React.FC<ButtonNodeProps> = ({
   component,
@@ -18,6 +19,21 @@ export const ButtonNode: React.FC<ButtonNodeProps> = ({
   onDragEnd,
   onPinClick,
 }) => {
+  const { updateComponent } = useCircuitStore();
+  const isPressed = component.state?.isPressed;
+
+  const handleMouseDown = () => {
+    updateComponent(component.id, {
+      state: { ...component.state, isPressed: true },
+    });
+  };
+
+  const handleMouseUp = () => {
+    updateComponent(component.id, {
+      state: { ...component.state, isPressed: false },
+    });
+  };
+
   return (
     <Group
       draggable
@@ -54,11 +70,14 @@ export const ButtonNode: React.FC<ButtonNodeProps> = ({
 
       {/* Button Cap */}
       <Circle
-        fill="#ef4444"
+        fill={isPressed ? "#b91c1c" : "#ef4444"}
+        onMouseDown={handleMouseDown}
+        onMouseLeave={handleMouseUp}
+        onMouseUp={handleMouseUp}
         radius={12}
         shadowBlur={2}
         shadowColor="black"
-        shadowOpacity={0.5}
+        shadowOpacity={0.5} // Ensure release if mouse leaves
       />
 
       {/* Pins */}

@@ -1,20 +1,20 @@
 export type ComponentType = "resistor" | "led" | "microcontroller" | "button";
 
-export interface IPosition {
+export type IPosition = {
   x: number;
   y: number;
-}
+};
 
-export interface IPin {
+export type IPin = {
   id: string;
   componentId: string;
   name: string; // e.g., "anode", "cathode", "pin1", "D0"
   type: "digital" | "analog" | "power" | "ground";
   direction: "input" | "output" | "bidirectional";
   relativePosition: IPosition; // Position relative to component center/top-left
-}
+};
 
-export interface IComponent {
+export type IComponent = {
   id: string;
   type: ComponentType;
   name: string; // User friendly name
@@ -22,35 +22,44 @@ export interface IComponent {
   rotation: number; // in degrees
   pins: IPin[];
   properties: Record<string, any>;
-}
+  state?: Record<string, any>; // Runtime state (e.g., isPressed for button)
+};
 
-export interface IResistor extends IComponent {
+export type IResistor = IComponent & {
   type: "resistor";
   properties: {
     resistance: number; // in Ohms
   };
-}
+};
 
-export interface ILed extends IComponent {
+export type ILed = IComponent & {
   type: "led";
   properties: {
     color: string; // hex code or name
     forwardVoltage: number; // in Volts
     maxCurrent: number; // in Amps
   };
-}
+};
 
-export interface IConnection {
+export type IMicrocontroller = IComponent & {
+  type: "microcontroller";
+  properties: {
+    program?: string; // .ino source code
+    hex?: string; // compiled hex
+  };
+};
+
+export type IConnection = {
   id: string;
   fromPinId: string;
   toPinId: string;
   color?: string;
-}
+};
 
-export interface ISimulationState {
+export type ISimulationState = {
   nodeVoltages: Record<string, number>; // pinId -> voltage
   branchCurrents: Record<string, number>; // connectionId -> current
   isRunning: boolean;
   isPaused: boolean;
   time: number; // Simulation time in ms
-}
+};

@@ -1,15 +1,15 @@
 import type Konva from "konva";
 import type React from "react";
-import { Circle, Group, Rect, Text } from "react-konva";
+import { Circle, Group, Rect } from "react-konva";
 import type { IResistor } from "../../types/Component";
 
-interface ResistorNodeProps {
+type ResistorNodeProps = {
   component: IResistor;
   isSelected: boolean;
   onSelect: () => void;
   onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => void;
   onPinClick: (pinId: string, e: Konva.KonvaEventObject<MouseEvent>) => void;
-}
+};
 
 export const ResistorNode: React.FC<ResistorNodeProps> = ({
   component,
@@ -41,14 +41,14 @@ export const ResistorNode: React.FC<ResistorNodeProps> = ({
           y={-15}
         />
       )}
-      {/* Resistor Body */}
+      {/* Resistor Body - Standard Beige */}
       <Rect
         cornerRadius={4}
-        fill="#e5e7eb"
+        fill="#f3e5ab"
         height={16}
-        stroke="#374151"
-        strokeWidth={2} // gray-200
-        width={50} // gray-700
+        stroke="#d4d4d8"
+        strokeWidth={1}
+        width={50}
         x={-25}
         y={-8}
       />
@@ -59,8 +59,8 @@ export const ResistorNode: React.FC<ResistorNodeProps> = ({
       <Rect fill="#d4af37" height={16} width={4} x={15} y={-8} />{" "}
       {/* Gold tolerance */}
       {/* Terminals */}
-      <Rect fill="#9ca3af" height={2} width={10} x={-35} y={-1} />
-      <Rect fill="#9ca3af" height={2} width={10} x={25} y={-1} />
+      <Rect fill="#a1a1aa" height={2} width={10} x={-35} y={-1} />
+      <Rect fill="#a1a1aa" height={2} width={10} x={25} y={-1} />
       {/* Pins (Interaction Points) */}
       <Circle
         fill="transparent"
@@ -70,11 +70,15 @@ export const ResistorNode: React.FC<ResistorNodeProps> = ({
         }
         onMouseEnter={(e) => {
           const container = e.target.getStage()?.container();
-          if (container) container.style.cursor = "crosshair";
+          if (container) {
+            container.style.cursor = "crosshair";
+          }
         }}
         onMouseLeave={(e) => {
           const container = e.target.getStage()?.container();
-          if (container) container.style.cursor = "default";
+          if (container) {
+            container.style.cursor = "default";
+          }
         }}
         radius={4}
         stroke="transparent"
@@ -89,26 +93,20 @@ export const ResistorNode: React.FC<ResistorNodeProps> = ({
         }
         onMouseEnter={(e) => {
           const container = e.target.getStage()?.container();
-          if (container) container.style.cursor = "crosshair";
+          if (container) {
+            container.style.cursor = "crosshair";
+          }
         }}
         onMouseLeave={(e) => {
           const container = e.target.getStage()?.container();
-          if (container) container.style.cursor = "default";
+          if (container) {
+            container.style.cursor = "default";
+          }
         }}
         radius={4}
         stroke="transparent"
         x={35}
         y={0}
-      />
-      {/* Label */}
-      <Text
-        align="center"
-        fill="#ccc"
-        fontSize={10}
-        text={`${component.properties.resistance}Ω`}
-        width={60}
-        x={-30}
-        y={15}
       />
     </Group>
   );

@@ -20,20 +20,25 @@ export const ComponentPalette: React.FC = () => {
 
   return (
     <div className="flex h-full flex-col gap-4 p-4">
-      <h2 className="font-bold text-gray-400 text-sm uppercase tracking-wider">
+      <h2 className="font-bold text-text-muted text-xs uppercase tracking-wider">
         Components
       </h2>
       <div className="grid grid-cols-2 gap-2">
         {components.map((comp) => (
-          <div
-            className="flex cursor-grab flex-col items-center justify-center rounded border border-transparent bg-gray-700 p-3 transition-colors hover:border-blue-500 hover:bg-gray-600 active:cursor-grabbing"
+          <button
+            className="flex cursor-grab flex-col items-center justify-center rounded-md border border-border-subtle bg-surface-bg p-3 transition-all hover:border-accent-primary/50 hover:bg-surface-hover active:scale-95 active:cursor-grabbing"
             draggable
             key={comp.type}
             onDragStart={(e) => handleDragStart(e, comp.type)}
+            type="button"
           >
-            <div className="mb-2 text-blue-400">{comp.icon}</div>
-            <span className="text-gray-200 text-xs">{comp.label}</span>
-          </div>
+            <div className="mb-2 text-text-secondary group-hover:text-text-primary">
+              {comp.icon}
+            </div>
+            <span className="font-medium text-text-secondary text-xs">
+              {comp.label}
+            </span>
+          </button>
         ))}
       </div>
     </div>

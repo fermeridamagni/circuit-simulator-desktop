@@ -19,12 +19,12 @@ export class SimulationCore {
 
   // constructor() {}
 
-  public updateCircuit(components: IComponent[], connections: IConnection[]) {
+  updateCircuit(components: IComponent[], connections: IConnection[]) {
     this.components = components;
     this.connections = connections;
   }
 
-  public startSimulationLoop(onUpdate: (state: ISimulationState) => void) {
+  startSimulationLoop(onUpdate: (state: ISimulationState) => void) {
     if (this.state.isRunning) {
       return;
     }
@@ -67,35 +67,98 @@ export class SimulationCore {
   }
 
   private solveCircuit() {
-    // Placeholder for circuit solving logic (MNA - Modified Nodal Analysis)
-    // 1. Build graph
-    // 2. Formulate equations (KCL/KVL)
-    // 3. Solve linear system
+    // Reset voltages
+    this.state.nodeVoltages = {};
 
-    // For now, just a dummy update to show activity
-    // Example: If there is a connection, set some dummy voltage
+    // 1. Build Adjacency List (Graph)
+    const adjList = new Map<string, string[]>(); // pinId -> connectedPinIds
 
-    // This is where the heavy lifting of SPICE-like simulation would go.
-    // For the prototype, we can just simulate a simple logic:
-    // If a component is connected to a source, propagate voltage.
-
-    // Mock behavior for LED demo:
-    // Find LEDs, check if they are "connected" (dummy check), set voltage
-    if (this.connections.length >= 0) {
-      // Dummy check to use the variable
-    }
-
+    // Initialize pins
     this.components.forEach((comp) => {
-      if (comp.type === "led") {
-        // Random fluctuation for demo purposes if simulation is running
-        const pinId = comp.pins[0]?.id;
-        if (pinId) {
-          // Simulate a voltage wave
-          this.state.nodeVoltages[pinId] =
-            2.5 + Math.sin(this.state.time / 500) * 2.5;
+      comp.pins.forEach((pin) => {
+        if (!adjList.has(pin.id)) adjList.set(pin.id, []);
+      });
+    });
+
+    // Add wire connections
+    this.connections.forEach((conn) => {
+      adjList.get(conn.fromPinId)?.push(conn.toPinId);
+      adjList.get(conn.toPinId)?.push(conn.fromPinId);
+    });
+
+    // 2. Identify Power Sources (For now, let's assume Arduino 5V pin is a source)
+    // We need to find the Arduino component and its 5V pin (not implemented in UI yet, so let's mock a "Power" component or use a specific pin)
+    // Hack: Let's say any pin named "D13" on an Arduino is HIGH (5V)
+
+    const sources: string[] = [];
+    this.components.forEach((comp) => {
+      if (comp.type === "microcontroller") {
+        // Assume D13 is blinking
+        const d13 = comp.pins.find((p) => p.name === "D13");
+        if (d13) {
+          // Blink logic: 1s ON, 1s OFF
+          const isHigh = Math.floor(this.state.time / 1000) % 2 === 0;
+          if (isHigh) {
+            this.state.nodeVoltages[d13.id] = 5;
+            sources.push(d13.id);
+          } else {
+            this.state.nodeVoltages[d13.id] = 0;
+          }
         }
       }
     });
+
+    // 3. Propagate Voltage (BFS)
+    // This is a very naive "Digital Logic" simulation, not true analog SPICE
+    const queue = [...sources];
+    const visited = new Set<string>(sources);
+
+    while (queue.length > 0) {
+      const currentPinId = queue.shift()!;
+      const voltage = this.state.nodeVoltages[currentPinId];
+
+      // Find component this pin belongs to
+      const component = this.components.find((c) =>
+        c.pins.some((p) => p.id === currentPinId)
+      );
+
+      // Propagate through wires
+      const neighbors = adjList.get(currentPinId) || [];
+      neighbors.forEach((neighborId) => {
+        if (!visited.has(neighborId)) {
+          this.state.nodeVoltages[neighborId] = voltage;
+          visited.add(neighborId);
+          queue.push(neighborId);
+        }
+      });
+
+      // Propagate through components (Simple pass-through for now)
+      if (component) {
+        if (component.type === "button") {
+          // If button is pressed, connect Pin 1 <-> Pin 2
+          if (component.state?.isPressed) {
+            // Find the "other" pin on the same side or pair
+            // Simplified: Connect all pins if pressed
+            component.pins.forEach((p) => {
+              if (p.id !== currentPinId && !visited.has(p.id)) {
+                this.state.nodeVoltages[p.id] = voltage;
+                visited.add(p.id);
+                queue.push(p.id);
+              }
+            });
+          }
+        } else if (component.type === "resistor") {
+          // Resistors pass voltage (ignoring drop for logic sim)
+          component.pins.forEach((p) => {
+            if (p.id !== currentPinId && !visited.has(p.id)) {
+              this.state.nodeVoltages[p.id] = voltage;
+              visited.add(p.id);
+              queue.push(p.id);
+            }
+          });
+        }
+      }
+    }
   }
 
   getState() {

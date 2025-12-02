@@ -6,7 +6,7 @@ import type {
   ISimulationState,
 } from "../types/Component";
 
-interface CircuitState {
+type CircuitState = {
   components: IComponent[];
   connections: IConnection[];
   selectedComponentId: string | null;
@@ -30,7 +30,7 @@ interface CircuitState {
 
   // Internal update from engine
   syncSimulationState: (state: ISimulationState) => void;
-}
+};
 
 export const useCircuitStore = create<CircuitState>((set, get) => ({
   components: [],
